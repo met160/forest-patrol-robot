@@ -3,289 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>森林巡逻机器人系统 - 在线演示</title>
+    <title>森林巡逻监控系统</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🌲 森林巡逻机器人系统 - 在线演示</h1>
-            <p>基于ORB-SLAM导航与YOLOv8森林目标检测的智能巡逻平台</p>
-        </div>
-        
-        <div class="navigation">
-            <a href="#" class="nav-btn" onclick="showView('main')">🏠 主控制台</a>
-            <a href="#" class="nav-btn" onclick="showView('dashboard')">📊 增强控制面板</a>
-            <a href="#" class="nav-btn" onclick="showView('camera')">🎯 增强检测视图</a>
+    <div class="app-container">
+        <!-- 顶部状态栏 -->
+        <div class="top-bar">
+            <div class="system-info">
+                <span class="status-dot online"></span>
+                <span class="system-name">森林巡逻监控系统</span>
+                <span class="version">v2.1.3</span>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">--:--:--</span>
+                <span class="battery">🔋 87%</span>
+            </div>
         </div>
 
-        <!-- 主控制台视图 -->
-        <div id="mainView" class="view">
-            <div class="status-grid">
-                <div class="status-card">
-                    <h3>🤖 机器人状态</h3>
-                    <div class="status-item">
-                        <span>系统状态:</span>
-                        <span class="status-value success" id="systemStatus">运行中</span>
-                    </div>
-                    <div class="status-item">
-                        <span>风险等级:</span>
-                        <span class="status-value" id="riskLevel">
-                            <span class="risk-indicator risk-low"></span>低风险
-                        </span>
-                    </div>
-                    <div class="status-item">
-                        <span>SLAM导航:</span>
-                        <span class="status-value success" id="slamStatus">活跃</span>
-                    </div>
-                    <div class="status-item">
-                        <span>目标检测:</span>
-                        <span class="status-value success" id="detectionStatus">活跃</span>
-                    </div>
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 左侧导航 -->
+            <div class="side-nav">
+                <div class="nav-section">
+                    <div class="nav-title">主要功能</div>
+                    <button class="nav-item active" onclick="switchTab('monitor')">
+                        <span class="nav-icon">📹</span>
+                        实时监控
+                    </button>
+                    <button class="nav-item" onclick="switchTab('map')">
+                        <span class="nav-icon">🗺️</span>
+                        巡逻地图
+                    </button>
+                    <button class="nav-item" onclick="switchTab('analysis')">
+                        <span class="nav-icon">📊</span>
+                        数据分析
+                    </button>
                 </div>
                 
-                <div class="status-card">
-                    <h3>📍 位置信息</h3>
-                    <div class="status-item">
-                        <span>X坐标:</span>
-                        <span class="status-value" id="posX">0.0 m</span>
-                    </div>
-                    <div class="status-item">
-                        <span>Y坐标:</span>
-                        <span class="status-value" id="posY">0.0 m</span>
-                    </div>
-                    <div class="status-item">
-                        <span>巡逻进度:</span>
-                        <span class="status-value" id="patrolProgress">0%</span>
-                    </div>
-                    <div class="status-item">
-                        <span>地图质量:</span>
-                        <span class="status-value success" id="mapQuality">95%</span>
-                    </div>
-                </div>
-                
-                <div class="status-card">
-                    <h3>🌡️ 环境传感器</h3>
-                    <div class="status-item">
-                        <span>温度:</span>
-                        <span class="status-value" id="temperature">25°C</span>
-                    </div>
-                    <div class="status-item">
-                        <span>湿度:</span>
-                        <span class="status-value" id="humidity">60%</span>
-                    </div>
-                    <div class="status-item">
-                        <span>空气质量:</span>
-                        <span class="status-value success" id="airQuality">良好</span>
-                    </div>
-                    <div class="status-item">
-                        <span>风速:</span>
-                        <span class="status-value" id="windSpeed">2.5 m/s</span>
-                    </div>
+                <div class="nav-section">
+                    <div class="nav-title">系统工具</div>
+                    <button class="nav-item" onclick="switchTab('alerts')">
+                        <span class="nav-icon">🚨</span>
+                        警报中心
+                        <span class="alert-badge">3</span>
+                    </button>
+                    <button class="nav-item" onclick="switchTab('logs')">
+                        <span class="nav-icon">📋</span>
+                        运行日志
+                    </button>
+                    <button class="nav-item" onclick="switchTab('settings')">
+                        <span class="nav-icon">⚙️</span>
+                        系统设置
+                    </button>
                 </div>
             </div>
-            
-            <div class="dashboard-grid">
-                <div class="main-panel">
-                    <h3>📹 实时巡逻视图</h3>
-                    <div class="camera-feed" id="cameraFeed">
-                        <div class="camera-overlay" id="cameraOverlay"></div>
-                        <div>森林巡逻模拟视图 - 演示模式</div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn" onclick="startCamera()">开始巡逻监控</button>
-                        <button class="btn btn-secondary" onclick="stopCamera()">停止监控</button>
-                        <button class="btn btn-warning" onclick="testDetection()">测试目标检测</button>
-                    </div>
-                    
-                    <h3>📈 传感器数据流</h3>
-                    <div class="sensor-chart" id="sensorChart">
-                        <div class="chart-placeholder">
-                            <canvas id="sensorCanvas"></canvas>
+
+            <!-- 右侧内容区 -->
+            <div class="content-area">
+                <!-- 实时监控标签页 -->
+                <div id="monitor" class="tab-content active">
+                    <div class="content-header">
+                        <h2>实时监控画面</h2>
+                        <div class="control-buttons">
+                            <button class="btn btn-primary" onclick="startPatrol()">
+                                <span class="btn-icon">▶️</span>
+                                开始巡逻
+                            </button>
+                            <button class="btn btn-secondary" onclick="pausePatrol()">
+                                <span class="btn-icon">⏸️</span>
+                                暂停
+                            </button>
+                            <button class="btn" onclick="takeSnapshot()">
+                                <span class="btn-icon">📸</span>
+                                截图
+                            </button>
                         </div>
                     </div>
-                </div>
-                
-                <div class="sidebar">
-                    <div class="control-panel">
-                        <h3>🚨 警报控制</h3>
-                        <button class="btn btn-danger" onclick="testAlert('fire')">测试火警</button>
-                        <button class="btn btn-warning" onclick="testAlert('smoke')">测试烟雾警报</button>
-                        <button class="btn" onclick="testAlert('animal')">测试动物检测</button>
-                        <button class="btn" onclick="testAlert('person')">测试人员检测</button>
-                        <button class="btn" onclick="clearAlerts()">清除所有警报</button>
-                    </div>
-                    
-                    <div class="control-panel">
-                        <h3>🔍 实时检测结果</h3>
-                        <div id="detectionResults">
-                            <div style="text-align: center; color: #666; padding: 20px;">
-                                等待检测数据...
+
+                    <div class="camera-container">
+                        <div class="video-feed">
+                            <div class="video-placeholder">
+                                <div class="scan-line"></div>
+                                <div class="video-info">
+                                    <div class="location-tag">北区森林 - 巡逻点 #12</div>
+                                    <div class="video-stats">
+                                        <span>🔴 录制中</span>
+                                        <span>📶 信号良好</span>
+                                        <span>🕒 04:32:15</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detection-sidebar">
+                            <div class="detection-header">
+                                <h3>实时检测</h3>
+                                <span class="detection-status active">检测中</span>
+                            </div>
+                            
+                            <div class="detection-list">
+                                <div class="detection-item animal">
+                                    <div class="detection-type">🦌 野生动物</div>
+                                    <div class="detection-info">
+                                        <div>梅花鹿 - 置信度 87%</div>
+                                        <div class="detection-time">2秒前</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="detection-item environment">
+                                    <div class="detection-type">🌳 环境监测</div>
+                                    <div class="detection-info">
+                                        <div>温度异常 +2.3°C</div>
+                                        <div class="detection-time">1分钟前</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="detection-item alert">
+                                    <div class="detection-type">🚨 安全警报</div>
+                                    <div class="detection-info">
+                                        <div>未授权人员进入</div>
+                                        <div class="detection-time">3分钟前</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="control-panel">
-                        <h3>📋 系统日志</h3>
-                        <div class="log-container" id="systemLog">
-                            <div class="log-entry">系统启动完成</div>
-                            <div class="log-entry">森林巡逻机器人就绪</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- 增强控制面板视图 -->
-        <div id="dashboardView" class="view" style="display: none;">
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-label">巡逻里程</div>
-                    <div class="metric-value" id="patrolDistance">0.0</div>
-                    <div class="metric-label">公里</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">检测目标</div>
-                    <div class="metric-value" id="totalDetections">0</div>
-                    <div class="metric-label">个</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">警报处理</div>
-                    <div class="metric-value" id="alertsHandled">0</div>
-                    <div class="metric-label">次</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">运行时间</div>
-                    <div class="metric-value" id="uptime">0:00</div>
-                    <div class="metric-label">时:分</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">电池电量</div>
-                    <div class="metric-value" id="batteryLevel">85%</div>
-                    <div class="metric-label">剩余</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">数据流量</div>
-                    <div class="metric-value" id="dataUsage">1.2</div>
-                    <div class="metric-label">GB</div>
-                </div>
-            </div>
-            
-            <div class="dashboard-grid">
-                <div class="main-panel">
-                    <h3>🗺️ 实时SLAM地图</h3>
-                    <div class="map-container" id="slamMap">
-                        <div class="robot-marker" id="robotMarker"></div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px; margin: 15px 0;">
-                        <button class="btn" onclick="startPatrol()">开始自动巡逻</button>
-                        <button class="btn btn-secondary" onclick="pausePatrol()">暂停巡逻</button>
-                        <button class="btn btn-warning" onclick="returnToBase()">返回基地</button>
-                        <button class="btn" onclick="updateMap()">刷新地图</button>
-                    </div>
-                    
-                    <h3>📊 多传感器数据融合</h3>
-                    <div class="sensor-chart">
-                        <div class="chart-placeholder">
-                            <canvas id="fusionChart"></canvas>
+                    <div class="sensor-grid">
+                        <div class="sensor-card">
+                            <div class="sensor-icon">🌡️</div>
+                            <div class="sensor-data">
+                                <div class="sensor-value">23.5°C</div>
+                                <div class="sensor-label">环境温度</div>
+                            </div>
+                        </div>
+                        
+                        <div class="sensor-card">
+                            <div class="sensor-icon">💧</div>
+                            <div class="sensor-data">
+                                <div class="sensor-value">65%</div>
+                                <div class="sensor-label">空气湿度</div>
+                            </div>
+                        </div>
+                        
+                        <div class="sensor-card">
+                            <div class="sensor-icon">🌬️</div>
+                            <div class="sensor-data">
+                                <div class="sensor-value">3.2 m/s</div>
+                                <div class="sensor-label">风速</div>
+                            </div>
+                        </div>
+                        
+                        <div class="sensor-card">
+                            <div class="sensor-icon">🔍</div>
+                            <div class="sensor-data">
+                                <div class="sensor-value">42 AQI</div>
+                                <div class="sensor-label">空气质量</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="sidebar">
-                    <div class="control-panel">
-                        <h3>🤖 机器人控制</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <button class="btn" onclick="moveRobot('forward')">↑ 前进</button>
-                            <button class="btn" onclick="moveRobot('backward')">↓ 后退</button>
-                            <button class="btn" onclick="moveRobot('left')">← 左转</button>
-                            <button class="btn" onclick="moveRobot('right')">→ 右转</button>
-                        </div>
-                        <div style="margin-top: 10px;">
-                            <button class="btn btn-secondary" onclick="stopRobot()">🛑 紧急停止</button>
-                        </div>
-                    </div>
-                    
-                    <div class="control-panel">
-                        <h3>🔧 系统诊断</h3>
-                        <div class="status-item">
-                            <span>SLAM系统:</span>
-                            <span class="status-value success" id="slamDiag">正常</span>
-                        </div>
-                        <div class="status-item">
-                            <span>视觉系统:</span>
-                            <span class="status-value success" id="visionDiag">正常</span>
-                        </div>
-                        <div class="status-item">
-                            <span>通信系统:</span>
-                            <span class="status-value success" id="commDiag">正常</span>
-                        </div>
-                        <div class="status-item">
-                            <span>动力系统:</span>
-                            <span class="status-value success" id="powerDiag">正常</span>
-                        </div>
-                        <button class="btn" onclick="runDiagnostics()" style="margin-top: 10px;">运行全面诊断</button>
-                    </div>
-                    
-                    <div class="control-panel">
-                        <h3>📋 任务队列</h3>
-                        <div id="taskQueue">
-                            <div class="task-item">1. 常规区域巡逻</div>
-                            <div class="task-item">2. 环境数据收集</div>
-                            <div class="task-item">3. 系统状态检查</div>
-                        </div>
-                        <button class="btn" onclick="addTask()" style="margin-top: 10px;">添加新任务</button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- 增强检测视图 -->
-        <div id="cameraView" class="view" style="display: none;">
-            <div class="camera-container">
-                <div class="video-panel">
-                    <div class="camera-feed" style="height: 500px;">
-                        <div class="camera-overlay" id="enhancedOverlay"></div>
-                        <div>增强检测视图 - 演示模式</div>
-                    </div>
-                </div>
-                
-                <div class="analysis-panel">
-                    <h3>🔍 实时检测分析</h3>
-                    <div class="object-list" id="objectList">
-                        <div style="text-align: center; color: #666; padding: 40px;">
-                            等待检测数据...<br>
-                            <small>启动增强检测以开始分析</small>
+                <!-- 巡逻地图标签页 -->
+                <div id="map" class="tab-content">
+                    <div class="content-header">
+                        <h2>实时巡逻地图</h2>
+                        <div class="map-controls">
+                            <button class="btn" onclick="zoomIn()">➕ 放大</button>
+                            <button class="btn" onclick="zoomOut()">➖ 缩小</button>
+                            <button class="btn" onclick="centerMap()">🎯 定位机器人</button>
                         </div>
                     </div>
-                    
+
+                    <div class="map-container">
+                        <div class="map-grid">
+                            <!-- 这里会是动态生成的地图 -->
+                            <div class="robot-marker" style="top: 60%; left: 45%;">
+                                <div class="robot-direction">↑</div>
+                            </div>
+                            <div class="patrol-path"></div>
+                            <div class="landmark tree" style="top: 30%; left: 20%;">🌲</div>
+                            <div class="landmark alert" style="top: 70%; left: 80%;">🚨</div>
+                        </div>
+                        
+                        <div class="map-legend">
+                            <div class="legend-item">
+                                <div class="legend-color robot"></div>
+                                <span>巡逻机器人</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color path"></div>
+                                <span>巡逻路径</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color alert"></div>
+                                <span>警报点位</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据分析标签页 -->
+                <div id="analysis" class="tab-content">
+                    <div class="content-header">
+                        <h2>巡逻数据分析</h2>
+                        <div class="date-filter">
+                            <select class="filter-select">
+                                <option>今日数据</option>
+                                <option>本周数据</option>
+                                <option>本月数据</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="metric-value" id="totalObjects">0</div>
-                            <div class="metric-label">检测目标</div>
+                        <div class="stat-card large">
+                            <div class="stat-title">巡逻统计</div>
+                            <div class="stat-content">
+                                <div class="stat-row">
+                                    <span>总巡逻里程</span>
+                                    <span class="stat-value">156.8 公里</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span>巡逻时长</span>
+                                    <span class="stat-value">342 小时</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span>覆盖区域</span>
+                                    <span class="stat-value">85%</span>
+                                </div>
+                            </div>
                         </div>
+
                         <div class="stat-card">
-                            <div class="metric-value" id="highRiskCount">0</div>
-                            <div class="metric-label">高风险目标</div>
+                            <div class="stat-title">检测统计</div>
+                            <div class="stat-number">1,243</div>
+                            <div class="stat-label">总检测次数</div>
                         </div>
+
                         <div class="stat-card">
-                            <div class="metric-value" id="avgConfidence">0%</div>
-                            <div class="metric-label">平均置信度</div>
+                            <div class="stat-title">警报处理</div>
+                            <div class="stat-number">28</div>
+                            <div class="stat-label">已处理警报</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="metric-value" id="frameRate">0</div>
-                            <div class="metric-label">帧率 (FPS)</div>
+                    </div>
+                </div>
+
+                <!-- 警报中心标签页 -->
+                <div id="alerts" class="tab-content">
+                    <div class="content-header">
+                        <h2>警报中心</h2>
+                        <div class="alert-filters">
+                            <button class="filter-btn active">全部</button>
+                            <button class="filter-btn">未处理</button>
+                            <button class="filter-btn">已处理</button>
+                        </div>
+                    </div>
+
+                    <div class="alerts-list">
+                        <div class="alert-item critical">
+                            <div class="alert-icon">🔥</div>
+                            <div class="alert-content">
+                                <div class="alert-title">火警警报</div>
+                                <div class="alert-desc">检测到疑似火源，坐标：北纬 39.9042, 东经 116.4074</div>
+                                <div class="alert-time">刚刚</div>
+                            </div>
+                            <button class="alert-action">处理</button>
+                        </div>
+
+                        <div class="alert-item warning">
+                            <div class="alert-icon">🚷</div>
+                            <div class="alert-content">
+                                <div class="alert-title">人员入侵</div>
+                                <div class="alert-desc">检测到未授权人员进入保护区</div>
+                                <div class="alert-time">5分钟前</div>
+                            </div>
+                            <button class="alert-action">处理</button>
+                        </div>
+
+                        <div class="alert-item info">
+                            <div class="alert-icon">🦌</div>
+                            <div class="alert-content">
+                                <div class="alert-title">野生动物</div>
+                                <div class="alert-desc">发现珍稀物种活动</div>
+                                <div class="alert-time">1小时前</div>
+                            </div>
+                            <button class="alert-action">查看</button>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="btn" onclick="startEnhancedCamera()">启动增强检测</button>
-                <button class="btn btn-secondary" onclick="stopEnhancedCamera()">停止检测</button>
-                <button class="btn" onclick="captureSnapshot()">📸 拍摄快照</button>
+        </div>
+
+        <!-- 底部状态栏 -->
+        <div class="bottom-bar">
+            <div class="status-items">
+                <span class="status-item">🤖 机器人状态: <strong>巡逻中</strong></span>
+                <span class="status-item">📡 网络: <strong>4G - 良好</strong></span>
+                <span class="status-item">🛰️ GPS: <strong>8颗卫星</strong></span>
+                <span class="status-item">🔋 电量: <strong>87% - 预计6小时</strong></span>
+            </div>
+            <div class="system-status">
+                <span class="last-update">最后更新: <span id="lastUpdateTime">--:--:--</span></span>
             </div>
         </div>
     </div>
